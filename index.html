@@ -135,7 +135,10 @@ addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
 addEventListener('touchend',e=>{if(sx==null||cur===2||cur===0)return;const dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>70)goTo(cur+(dx<0?1:-1));});
 
 const au=new Audio(CONFIG.song);au.loop=true;au.volume=.7;let muted=false;
-addEventListener('pagehide',()=>{try{localStorage.setItem('st',au.currentTime)}catch(e){}});
+const saveT=()=>{try{localStorage.setItem('st',au.currentTime)}catch(e){}};
+addEventListener('pagehide',saveT);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)saveT();});
+setInterval(()=>{if(!au.paused)saveT();},1000);
 $('snd').onclick=()=>{muted=!muted;au.muted=muted;$('snd').classList.toggle('m',muted);au.play().catch(()=>{});};
 $('go').onclick=()=>{au.play().catch(()=>{});goTo(1);};
 
@@ -210,7 +213,7 @@ $('e4').onclick=e=>{burst(e.clientX,e.clientY);$('bub').textContent='I love you.
 // Countdown + locked button
 const ubw=$('ubw');
 $('ub').onclick=()=>{
-  if(opened){location.href=CONFIG.nextPages[0];return;}
+  if(opened){saveT();location.href=CONFIG.nextPages[0];return;}
   ubw.classList.remove('sh');void ubw.offsetWidth;ubw.classList.add('sh');};
 function unlock(){opened=true;ubw.classList.add('open');
   $('lk').innerHTML='<path d="M17 10V8a5 5 0 0 0-9.6-2l1.9.7A3 3 0 0 1 15 8v2H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-1z"/>';
