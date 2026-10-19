@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+/* 21 Nov se pehle sirf admin (tumhara phone) khol sakta hai, baaki index pe wapas */
+(function(){var ok=Date.now()>=new Date(2026,10,21).getTime(),a=false;try{a=localStorage.getItem('ps_admin')==='1'}catch(e){}
+if(!ok&&!a){document.documentElement.style.display='none';location.replace('index.html');window.stop();}})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For Prachi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;font-family:'Bodoni Moda',Georgia,serif;color:#fff}
+body{background:linear-gradient(180deg,#070d2e 0%,#1c2060 45%,#4b2a7a 78%,#ff9cc6 130%)}
+#sky{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
+#hint{position:fixed;top:calc(40px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;font-size:24px;font-style:italic;text-shadow:0 0 14px #ff8fbd,0 0 30px #8fd0ff;transition:opacity 1.5s;pointer-events:none;animation:pu 2.4s ease-in-out infinite}
+@keyframes pu{50%{opacity:.55}}
+#fin{position:fixed;left:0;right:0;bottom:calc(20% + env(safe-area-inset-bottom,0px));text-align:center;pointer-events:none}
+#fin div{opacity:0;transform:translateY(10px);transition:opacity 2.2s,transform 2.2s;font-style:italic;text-shadow:0 0 16px #ff8fbd,0 0 34px #ff8fbd}
+#fin div.on{opacity:1;transform:none}
+#l1{font-size:28px}#l2{font-size:36px;margin-top:8px}
+#pn{position:fixed;left:14px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:72px;pointer-events:none;animation:wob 3s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes wob{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+</style></head><body>
+<canvas id="sky"></canvas>
+<div id="hint">Touch the stars</div>
+<div id="fin"><div id="l1"></div><div id="l2"></div></div>
+<svg id="pn" viewBox="0 0 100 120"><ellipse cx="20" cy="76" rx="8" ry="20" transform="rotate(20 20 76)" fill="#5b74c8"/><ellipse cx="80" cy="76" rx="8" ry="20" transform="rotate(-20 80 76)" fill="#5b74c8"/><ellipse cx="50" cy="65" rx="32" ry="45" fill="#6a84d6"/><ellipse cx="50" cy="79" rx="22" ry="31" fill="#fff"/><circle cx="38" cy="46" r="6.5" fill="#fff"/><circle cx="62" cy="46" r="6.5" fill="#fff"/><circle cx="39" cy="47" r="3.2" fill="#111"/><circle cx="61" cy="47" r="3.2" fill="#111"/><circle cx="29" cy="57" r="4.5" fill="#ff8fb8" opacity=".8"/><circle cx="71" cy="57" r="4.5" fill="#ff8fb8" opacity=".8"/><path d="M44 54h12l-6 9z" fill="#ffb23e"/><ellipse cx="38" cy="112" rx="10" ry="5" fill="#ffb23e"/><ellipse cx="62" cy="112" rx="10" ry="5" fill="#ffb23e"/></svg>
+<script>
+const CONFIG={name:'Prachi',lines:['Happy Birthday','I love you']};   // naam / neeche ki lines yahan badlo
+const $=id=>document.getElementById(id);
+$('l1').textContent=CONFIG.lines[0];$('l2').textContent=CONFIG.lines[1];
+const cv=$('sky'),g=cv.getContext('2d');let W,H,bgStars=[],T=[],pairs=[],on=0,done=false,idle=0,trail=[],shoot=[],R=50,lastT=0,nextS=2,auto=0;
+const glow=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),q=x.createRadialGradient(32,32,0,32,32,32);
+  q.addColorStop(0,'rgba(255,255,255,1)');q.addColorStop(.25,'rgba(255,225,245,.7)');q.addColorStop(1,'rgba(255,180,220,0)');x.fillStyle=q;x.fillRect(0,0,64,64);return c;})();
+function thin(img,w,h){let ch=true;
+  while(ch){ch=false;
+    for(let pass=0;pass<2;pass++){const del=[];
+      for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;if(!img[i])continue;
+        const p2=img[i-w],p3=img[i-w+1],p4=img[i+1],p5=img[i+w+1],p6=img[i+w],p7=img[i+w-1],p8=img[i-1],p9=img[i-w-1];
+        const B=p2+p3+p4+p5+p6+p7+p8+p9;if(B<2||B>6)continue;
+        const A=(!p2&&p3)+(!p3&&p4)+(!p4&&p5)+(!p5&&p6)+(!p6&&p7)+(!p7&&p8)+(!p8&&p9)+(!p9&&p2);if(A!==1)continue;
+        if(pass===0){if(p2*p4*p6!==0||p4*p6*p8!==0)continue;}else{if(p2*p4*p8!==0||p2*p6*p8!==0)continue;}
+        del.push(i);}
+      if(del.length){ch=true;del.forEach(i=>img[i]=0);}}}
+  return img;}
+function build(){const dpr=Math.min(devicePixelRatio,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;g.setTransform(dpr,0,0,dpr,0,0);
+  bgStars=Array.from({length:Math.round(W*H/5500)},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.2+.3,p:Math.random()*6.28,s:.5+Math.random()*1.5}));
+  // naam ko patla karke (skeleton) uske upar taare rakhte hain, taaki akshar saaf dikhein
+  const Ww=560,Hw=230,o=document.createElement('canvas');o.width=Ww;o.height=Hw;const c=o.getContext('2d'),font=s=>`italic 400 ${s}px "Bodoni Moda",Georgia,serif`;
+  let fs=200;c.font=font(fs);fs=fs*(Ww*.92)/c.measureText(CONFIG.name).width;c.font=font(fs);
+  c.fillStyle=c.strokeStyle='#fff';c.lineWidth=fs*.05;c.lineJoin='round';c.textAlign='center';c.textBaseline='middle';
+  c.fillText(CONFIG.name,Ww/2,Hw/2);c.strokeText(CONFIG.name,Ww/2,Hw/2);
+  const d=c.getImageData(0,0,Ww,Hw).data,img=new Uint8Array(Ww*Hw);for(let i=0;i<img.length;i++)img[i]=d[i*4+3]>110?1:0;
+  thin(img,Ww,Hw);
+  const gap=15,pk=[];
+  for(let y=0;y<Hw;y++)for(let x=0;x<Ww;x++)if(img[y*Ww+x]&&pk.every(p=>(p[0]-x)**2+(p[1]-y)**2>=gap*gap))pk.push([x,y]);
+  const near=(x,y)=>{x=Math.round(x);y=Math.round(y);for(let j=-2;j<=2;j++)for(let i=-2;i<=2;i++)if(img[(y+j)*Ww+x+i])return true;return false;};
+  const k=W*.86/Ww,oy=H*.46;
+  T=pk.map(([x,y])=>({x:(x-Ww/2)*k+W/2,y:(y-Hw/2)*k+oy,l:0,on:false,p:Math.random()*6.28}));
+  pairs=[];for(let i=0;i<pk.length;i++)for(let j=i+1;j<pk.length;j++){const dx=pk[j][0]-pk[i][0],dy=pk[j][1]-pk[i][1];
+    if(Math.hypot(dx,dy)<gap*1.8){let ok=true;for(let q=1;q<6;q++)if(!near(pk[i][0]+dx*q/6,pk[i][1]+dy*q/6)){ok=false;break;}if(ok)pairs.push([i,j]);}}
+  on=0;R=Math.max(46,Math.min(W,H)*.12);}
+const hideHint=()=>{const h=$('hint');h.style.animation='none';h.style.opacity=0;};
+function light(s){if(!s.on){s.on=true;on++;}}
+function finish(){done=true;T.forEach(light);hideHint();$('l1').classList.add('on');setTimeout(()=>$('l2').classList.add('on'),2200);}
+function touch(x,y){idle=0;hideHint();trail.push({x,y,l:1});
+  for(const s of T)if(!s.on&&Math.hypot(s.x-x,s.y-y)<R)light(s);
+  if(!done&&on/T.length>.9)finish();}
+cv.addEventListener('pointerdown',e=>touch(e.clientX,e.clientY));
+cv.addEventListener('pointermove',e=>touch(e.clientX,e.clientY));
+addEventListener('resize',()=>{if(on===0)build();});
+function frame(now){const t=now/1000,dt=Math.min(.05,t-lastT);lastT=t;g.clearRect(0,0,W,H);g.globalCompositeOperation='lighter';
+  for(const s of bgStars){g.globalAlpha=.35+.45*Math.abs(Math.sin(t*s.s+s.p));g.fillStyle='#fff';g.beginPath();g.arc(s.x,s.y,s.r,0,6.283);g.fill();}
+  g.lineWidth=1.2;g.strokeStyle='#ffd6ee';
+  for(const [i,j] of pairs){const a=Math.min(T[i].l,T[j].l);if(a>.02){g.globalAlpha=a*.6;g.beginPath();g.moveTo(T[i].x,T[i].y);g.lineTo(T[j].x,T[j].y);g.stroke();}}
+  for(const s of T){s.l+=((s.on?1:0)-s.l)*.06;const r=2.4+s.l*(6+1.5*Math.sin(t*3+s.p));g.globalAlpha=.35+.65*s.l;g.drawImage(glow,s.x-r,s.y-r,r*2,r*2);}
+  for(let i=trail.length-1;i>=0;i--){const p=trail[i];p.l-=dt*1.6;if(p.l<=0){trail.splice(i,1);continue;}g.globalAlpha=p.l*.8;const r=14*p.l+4;g.drawImage(glow,p.x-r,p.y-r,r*2,r*2);}
+  if(t>nextS){nextS=t+(done?1.2:4)+Math.random()*3;shoot.push({x:Math.random()*W*.8,y:Math.random()*H*.35,vx:380+Math.random()*200,vy:160+Math.random()*120,l:1});}
+  for(let i=shoot.length-1;i>=0;i--){const s=shoot[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.l-=dt*.9;if(s.l<=0){shoot.splice(i,1);continue;}
+    const gr=g.createLinearGradient(s.x,s.y,s.x-s.vx*.18,s.y-s.vy*.18);gr.addColorStop(0,'rgba(255,255,255,'+s.l+')');gr.addColorStop(1,'rgba(255,180,220,0)');
+    g.globalAlpha=1;g.strokeStyle=gr;g.lineWidth=2;g.beginPath();g.moveTo(s.x,s.y);g.lineTo(s.x-s.vx*.18,s.y-s.vy*.18);g.stroke();}
+  if(!done){idle+=dt;if(idle>9){auto+=dt;if(auto>.5){auto=0;const u=T.filter(s=>!s.on);if(u.length)light(u[Math.random()*u.length|0]);if(on/T.length>.9)finish();}}}
+  g.globalAlpha=1;g.globalCompositeOperation='source-over';requestAnimationFrame(frame);}
+(document.fonts?document.fonts.load('italic 400 100px "Bodoni Moda"'):Promise.resolve()).catch(()=>{}).then(()=>{build();requestAnimationFrame(frame);});
+</script>
+<script>
+/* song pichle page se wahi se aage chalega */
+(function(){const a=new Audio('song.mp3');a.loop=true;a.volume=.7;
+  a.addEventListener('loadedmetadata',()=>{try{a.currentTime=parseFloat(localStorage.getItem('st'))||0}catch(e){}},{once:true});
+  addEventListener('pagehide',()=>{try{localStorage.setItem('st',a.currentTime)}catch(e){}});
+  const p=()=>a.play().catch(()=>{});p();addEventListener('pointerdown',p,{once:true});})();
+</script>
+</body></html>

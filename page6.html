@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+/* 21 Nov se pehle sirf admin (tumhara phone) khol sakta hai, baaki index pe wapas */
+(function(){var ok=Date.now()>=new Date(2026,10,21).getTime(),a=false;try{a=localStorage.getItem('ps_admin')==='1'}catch(e){}
+if(!ok&&!a){document.documentElement.style.display='none';location.replace('index.html');window.stop();}})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prachi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #2b2a5c 0%, #141a3d 55%, #0a1026 100%);
+    font-family: 'Bodoni Moda', Georgia, serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #bg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #c {
+    position: relative; z-index: 1;
+    width: min(92vw, 62vh, 560px); aspect-ratio: 1 / 1;
+    border-radius: 22px; touch-action: none;
+    box-shadow: 0 0 60px rgba(255,170,210,.32), 0 0 130px rgba(140,200,255,.22);
+  }
+  #msg {
+    position: relative; z-index: 1;
+    margin: 22px 16px 0; text-align: center;
+    font-style: italic; font-size: clamp(22px, 6vw, 34px);
+    color: #ffe3f0; text-shadow: 0 0 18px rgba(255,170,210,.7), 0 0 40px rgba(160,200,255,.4);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 2.2s ease, transform 2.2s ease;
+  }
+  #msg.show { opacity: 1; transform: none; }
+  #nx{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:48px;height:48px;border-radius:50%;border:1px solid #ffffff88;background:#ffffff22;color:#ffd6e5;display:grid;place-items:center;z-index:5;opacity:0;animation:nxin 1.5s 12s forwards;box-shadow:0 0 16px #ff9cc688;text-decoration:none}
+  #nx svg{width:22px;height:22px}
+  @keyframes nxin{to{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<a id="nx" href="page7.html" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></a>
+<canvas id="c"></canvas>
+<div id="msg"></div>
+
+<script>
+/* ---------------- SETTINGS ---------------- */
+const CONFIG = {
+  photo: 'prachi.jpeg',            // photo ka path (GitHub me isi folder me rakho)
+  crop: [300, 0, 1200, 900],      // [x1, y1, x2, y2] photo pixels me. null = auto center square
+  text: 'Happy Birthday Prachi',  // neeche aane wala text. '' = koi text nahi
+  size: 600,                      // canvas resolution
+  step: 4,                        // 3 = sharp (heavy), 4 = balanced, 5 = light (slow phones ke liye)
+  delay: 5.0,                     // particles kitni der tak start hote rahenge (sec)
+  dur: [3.5, 5.0],                // har particle ko pahunchne me kitna time (sec)
+  brighten: 1.0,
+  touchRadius: 60                 // touch/mouse pe dust kitni door tak bikhrega
+};
+const GLOW = [[255,165,205],[205,165,255],[145,210,255],[255,215,175],[255,190,225]];
+/* ------------------------------------------ */
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const S = CONFIG.size;
+cv.width = cv.height = S;
+const msg = document.getElementById('msg');
+msg.textContent = CONFIG.text;
+
+/* ---- background floating dust ---- */
+(function () {
+  const bg = document.getElementById('bg'), b = bg.getContext('2d');
+  let w, h, dots = [];
+  function resize() {
+    w = bg.width = innerWidth; h = bg.height = innerHeight;
+    dots = Array.from({ length: 70 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: Math.random() * 1.8 + 0.6, s: Math.random() * 0.35 + 0.1,
+      p: Math.random() * 6.28, c: GLOW[(Math.random() * GLOW.length) | 0]
+    }));
+  }
+  addEventListener('resize', resize); resize();
+  (function loop(now) {
+    b.clearRect(0, 0, w, h);
+    for (const d of dots) {
+      d.y -= d.s; if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; }
+      const x = d.x + Math.sin(now / 1500 + d.p) * 10;
+      b.globalAlpha = 0.25 + 0.35 * Math.abs(Math.sin(now / 1200 + d.p));
+      b.fillStyle = `rgb(${d.c[0]},${d.c[1]},${d.c[2]})`;
+      b.beginPath(); b.arc(x, d.y, d.r, 0, 6.283); b.fill();
+    }
+    requestAnimationFrame(loop);
+  })(0);
+})();
+
+/* ---- load photo ---- */
+const img = new Image();
+img.onload = start;
+img.onerror = () => console.error('Photo load nahi hui: ' + CONFIG.photo);
+img.src = CONFIG.photo;
+
+function start() {
+  let [x1, y1, x2, y2] = CONFIG.crop || [0, 0, img.naturalWidth, img.naturalHeight];
+  const cw = x2 - x1, ch = y2 - y1, s = Math.min(cw, ch);
+  x1 += (cw - s) / 2; y1 += (ch - s) / 2;
+
+  const off = document.createElement('canvas');
+  off.width = off.height = S;
+  const o = off.getContext('2d');
+  o.drawImage(img, x1, y1, s, s, 0, 0, S, S);
+
+  let px;
+  try {
+    px = o.getImageData(0, 0, S, S).data;
+  } catch (e) {
+    // file:// se kholne pe browser pixels padhne nahi deta -> live server / GitHub Pages pe chalao
+    console.error('Pixels read nahi hue (local file). Live server ya GitHub Pages pe chalao.', e);
+    ctx.drawImage(off, 0, 0);
+    setTimeout(() => msg.classList.add('show'), 800);
+    return;
+  }
+
+  const STEP = CONFIG.step;
+  const side = Math.floor(S / STEP);
+  const N = side * side;
+
+  const f = n => new Float32Array(n);
+  const sx = f(N), sy = f(N), tx = f(N), ty = f(N), dx = f(N), dy = f(N);
+  const qx = f(N), qy = f(N), amp = f(N), ph = f(N), dl = f(N), du = f(N);
+  const ox = f(N), oy = f(N), vx = f(N), vy = f(N);
+  const cr = new Uint8Array(N), cg = new Uint8Array(N), cb = new Uint8Array(N);
+  const gr = new Uint8Array(N), gg = new Uint8Array(N), gb = new Uint8Array(N);
+
+  let i = 0;
+  for (let gy = 0; gy < side; gy++) {
+    for (let gx = 0; gx < side; gx++, i++) {
+      const X = gx * STEP, Y = gy * STEP;
+      const k = (Y * S + X) * 4;
+      cr[i] = Math.min(255, px[k] * CONFIG.brighten);
+      cg[i] = Math.min(255, px[k + 1] * CONFIG.brighten);
+      cb[i] = Math.min(255, px[k + 2] * CONFIG.brighten);
+      tx[i] = X; ty[i] = Y;
+      sx[i] = Math.random() * (S + 160) - 80;
+      sy[i] = Math.random() * (S + 160) - 80;
+      dx[i] = tx[i] - sx[i]; dy[i] = ty[i] - sy[i];
+      const len = Math.hypot(dx[i], dy[i]) + 1e-6;
+      qx[i] = -dy[i] / len; qy[i] = dx[i] / len;
+      amp[i] = (Math.random() * 2 - 1) * 120;
+      ph[i] = Math.random() * 6.283;
+      dl[i] = Math.random() * CONFIG.delay;
+      du[i] = CONFIG.dur[0] + Math.random() * (CONFIG.dur[1] - CONFIG.dur[0]);
+      const g = GLOW[(Math.random() * GLOW.length) | 0];
+      gr[i] = g[0]; gg[i] = g[1]; gb[i] = g[2];
+    }
+  }
+
+  /* pointer interaction: dust bikharti hai, phir wapas jud jaati hai */
+  let mx = -9999, my = -9999;
+  function setPointer(e) {
+    const r = cv.getBoundingClientRect();
+    mx = (e.clientX - r.left) * (S / r.width);
+    my = (e.clientY - r.top) * (S / r.height);
+  }
+  cv.addEventListener('pointerdown', setPointer);
+  cv.addEventListener('pointermove', setPointer);
+  const clearPointer = () => { mx = my = -9999; };
+  cv.addEventListener('pointerup', clearPointer);
+  cv.addEventListener('pointerleave', clearPointer);
+  cv.addEventListener('pointercancel', clearPointer);
+
+  const frameData = ctx.createImageData(S, S);
+  const buf = frameData.data;
+  const R = CONFIG.touchRadius, R2 = R * R;
+  const t0 = performance.now();
+  const textAt = CONFIG.delay + CONFIG.dur[1] + 0.3;
+  let shown = false;
+
+  function frame(now) {
+    const t = (now - t0) / 1000;
+    buf.fill(0);
+
+    for (let n = 0; n < N; n++) {
+      let p = (t - dl[n]) / du[n];
+      p = p < 0 ? 0 : p > 1 ? 1 : p;
+      const q = 1 - p;
+      const e = 1 - q * q * q;
+      const sw = Math.sin(p * Math.PI) * amp[n];
+      const wob = (1 - e) * 5;
+      let x = sx[n] + dx[n] * e + qx[n] * sw + Math.sin(t * 1.5 + ph[n]) * wob;
+      let y = sy[n] + dy[n] * e + qy[n] * sw + Math.cos(t * 1.3 + ph[n]) * wob;
+
+      if (p >= 1) {
+        const ddx = tx[n] + ox[n] - mx, ddy = ty[n] + oy[n] - my;
+        const d2 = ddx * ddx + ddy * ddy;
+        if (d2 < R2) {
+          const d = Math.sqrt(d2) + 0.001;
+          const fo = (1 - d / R) * 3.2;
+          vx[n] += ddx / d * fo; vy[n] += ddy / d * fo;
+        }
+        vx[n] -= ox[n] * 0.06; vy[n] -= oy[n] * 0.06;
+        vx[n] *= 0.88; vy[n] *= 0.88;
+        ox[n] += vx[n]; oy[n] += vy[n];
+        x += ox[n]; y += oy[n];
+      }
+
+      const xi = Math.round(x), yi = Math.round(y);
+      if (xi < 0 || yi < 0 || xi > S - STEP || yi > S - STEP) continue;
+
+      const tw = 1 + 0.12 * (1 - e) * Math.sin(t * 4 + ph[n] * 3) + 0.04 * Math.sin(t * 3 + ph[n] * 5);
+      const dim = (0.45 + 0.55 * e) * tw;
+      const r = (gr[n] * (1 - e) + cr[n] * e) * dim;
+      const g = (gg[n] * (1 - e) + cg[n] * e) * dim;
+      const b = (gb[n] * (1 - e) + cb[n] * e) * dim;
+
+      for (let yy = 0; yy < STEP; yy++) {
+        let k = ((yi + yy) * S + xi) * 4;
+        for (let xx = 0; xx < STEP; xx++, k += 4) {
+          buf[k] = r; buf[k + 1] = g; buf[k + 2] = b; buf[k + 3] = 255;
+        }
+      }
+    }
+
+    ctx.putImageData(frameData, 0, 0);
+
+    if (!shown && t > textAt && CONFIG.text) { msg.classList.add('show'); shown = true; }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+</script>
+<script>
+/* song pichle page se wahi se aage chalega */
+(function(){const a=new Audio('song.mp3');a.loop=true;a.volume=.7;
+  a.addEventListener('loadedmetadata',()=>{try{a.currentTime=parseFloat(localStorage.getItem('st'))||0}catch(e){}},{once:true});
+  addEventListener('pagehide',()=>{try{localStorage.setItem('st',a.currentTime)}catch(e){}});
+  const p=()=>a.play().catch(()=>{});p();addEventListener('pointerdown',p,{once:true});})();
+</script>
+</body>
+</html>
