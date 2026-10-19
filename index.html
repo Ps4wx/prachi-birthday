@@ -135,6 +135,7 @@ addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
 addEventListener('touchend',e=>{if(sx==null||cur===2||cur===0)return;const dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>70)goTo(cur+(dx<0?1:-1));});
 
 const au=new Audio(CONFIG.song);au.loop=true;au.volume=.7;let muted=false;
+addEventListener('pagehide',()=>{try{localStorage.setItem('st',au.currentTime)}catch(e){}});
 $('snd').onclick=()=>{muted=!muted;au.muted=muted;$('snd').classList.toggle('m',muted);au.play().catch(()=>{});};
 $('go').onclick=()=>{au.play().catch(()=>{});goTo(1);};
 
