@@ -176,7 +176,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const song = new Audio(SONG_SRC); song.loop = true;
 const voice = new Audio(VOICE_SRC);
 addEventListener('pagehide', () => { if(!song.paused){ try{localStorage.setItem(SONG_KEY, song.currentTime)}catch(e){} } });
-try { song.currentTime = parseFloat(localStorage.getItem(SONG_KEY)) || 0; } catch(e){}
+song.addEventListener('loadedmetadata', () => { try { song.currentTime = parseFloat(localStorage.getItem(SONG_KEY)) || 0; } catch(e){} }, {once:true});
+song.load();
 
 /* ---- glow / spotlight ---- */
 const glowEl = $('glow');
