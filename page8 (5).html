@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+/* lock: same as page5-7 (date 2026,0,1 = abhi sabke liye khula; 21 Nov ke liye new Date(2026,10,21)) */
+(function(){var ok=Date.now()>=new Date(2026,0,1).getTime(),a=false;try{a=localStorage.getItem('ps_admin')==='1'}catch(e){}
+if(!ok&&!a){document.documentElement.style.display='none';location.replace('index.html');window.stop();}})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For Prachi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#0b1236;font-family:'Bodoni Moda',Georgia,serif;color:#fff;-webkit-tap-highlight-color:transparent}
+#gl{position:fixed;inset:0;touch-action:none}#gl canvas{display:block}
+#hint{position:fixed;top:calc(34px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;font-size:22px;font-style:italic;text-shadow:0 0 14px #ff8fbd,0 0 30px #8fd0ff;pointer-events:none;transition:opacity 1s;animation:pu 2.4s ease-in-out infinite}
+@keyframes pu{50%{opacity:.5}}
+#cap{position:fixed;left:0;right:0;bottom:calc(9% + env(safe-area-inset-bottom,0px));padding:0 24px;text-align:center;font-size:26px;font-style:italic;text-shadow:0 0 16px #ff8fbd,0 0 30px #ff8fbd;opacity:0;transition:opacity 1.2s;pointer-events:none}
+#cap.on{opacity:1}
+#cnt{position:fixed;left:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px));font-size:15px;font-style:italic;opacity:.7;text-shadow:0 0 10px #ff8fbd;pointer-events:none}
+#sk{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:6;padding:8px 18px;border-radius:22px;border:1px solid #ffffff77;background:#ffffff1f;color:#ffd6e5;font:italic 16px 'Bodoni Moda',Georgia,serif;box-shadow:0 0 14px #ff9cc666;cursor:pointer;backdrop-filter:blur(4px)}
+#vg{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 30px #ff4f94;opacity:0;transition:opacity .5s}
+#fin{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:30px;box-sizing:border-box;text-align:center;background:radial-gradient(ellipse at 50% 50%,#2a0a3acc,#05061ad9);opacity:0;visibility:hidden;transition:opacity 2.5s;pointer-events:none}
+#fin.on{opacity:1;visibility:visible}
+#fin p{margin:0;font-style:italic;font-size:clamp(24px,7vw,40px);line-height:1.35;text-shadow:0 0 18px #ff8fbd,0 0 40px #ff8fbd;opacity:0;transform:translateY(10px);transition:opacity 2.4s,transform 2.4s}
+#fin p.on{opacity:1;transform:none}
+#nx{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:48px;height:48px;border-radius:50%;border:1px solid #ffffff88;background:#ffffff22;color:#ffd6e5;display:none;place-items:center;z-index:5;box-shadow:0 0 16px #ff9cc688;text-decoration:none}
+#nx svg{width:22px;height:22px}
+</style></head><body>
+<div id="gl"></div><div id="vg"></div>
+<div id="hint">Tap to follow the penguin</div>
+<button id="sk">Skip</button>
+<div id="cap"></div><div id="cnt"></div>
+<div id="fin"></div>
+<a id="nx" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></a>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+/* ---------- SETTINGS ---------- */
+const CONFIG={
+  count:12,                         // kitni photos (a1.jpg ... a12.jpg, repo me same folder me)
+  photo:i=>`a${i+1}.jpg`,
+  caps:[],                          // optional: caps[0]='Humari pehli photo', caps[1]='...'  (khali = koi text nahi)
+  msg:['Maine tumhare liye poora raasta dhoondh liya.','Har pebble ek yaad thi, aur har yaad tum.','That’s your day, baby.','Happy Birthday, Prachi ❤'],
+  next:'page9.html'                 // agla page. '' = button nahi
+};
+const T=THREE,$=id=>document.getElementById(id),N=CONFIG.count,clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ren=new T.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.outputEncoding=T.sRGBEncoding;$('gl').append(ren.domElement);
+const sc=new T.Scene(),cam=new T.PerspectiveCamera(50,1,.1,200);sc.fog=new T.Fog(0x0b1236,12,58);sc.background=new T.Color(0x0b1236);
+function rs(){ren.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();}addEventListener('resize',rs);rs();
+sc.add(new T.AmbientLight(0xaab4ff,.9));const dl=new T.DirectionalLight(0xffffff,.7);dl.position.set(3,6,4);sc.add(dl);
+const gtex=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),q=x.createRadialGradient(32,32,0,32,32,32);
+  q.addColorStop(0,'#fff');q.addColorStop(.3,'rgba(255,255,255,.4)');q.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=q;x.fillRect(0,0,64,64);return new T.CanvasTexture(c);})();
+const glow=(c,s,o)=>{const m=new T.Sprite(new T.SpriteMaterial({map:gtex,color:c,transparent:true,opacity:o,blending:T.AdditiveBlending,depthWrite:false}));m.scale.set(s,s,1);return m;};
+
+/* ---------- ground, stars, path ---------- */
+const gm=new T.MeshStandardMaterial({color:0xdfe9ff,roughness:1}),ground=new T.Mesh(new T.PlaneGeometry(400,400),gm);ground.rotation.x=-Math.PI/2;sc.add(ground);
+const stars=new T.Points((()=>{const g=new T.BufferGeometry(),a=[];for(let i=0;i<260;i++){const u=Math.random()*6.28,v=Math.random()*1.2+.15;a.push(Math.cos(u)*90,v*70,Math.sin(u)*90);}
+  g.setAttribute('position',new T.Float32BufferAttribute(a,3));return g;})(),new T.PointsMaterial({color:0xffffff,size:1.4,fog:false,transparent:true,opacity:.8}));sc.add(stars);
+const pp=[];for(let k=0;k<=N+1;k++)pp.push(new T.Vector3(Math.sin(k*.75)*6+Math.sin(k*.31)*2,0,-k*9));
+const curve=new T.CatmullRomCurve3(pp),L=curve.getLength();
+const trail=(()=>{const a=[],n=Math.floor(L*1.4);for(let i=0;i<n;i++){const p=curve.getPointAt(i/n);a.push(p.x+(Math.random()-.5)*.5,.05,p.z+(Math.random()-.5)*.5);}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(a,3));return new T.Points(g,new T.PointsMaterial({map:gtex,color:0xffc4de,size:.5,transparent:true,opacity:.65,blending:T.AdditiveBlending,depthWrite:false}));})();sc.add(trail);
+
+/* ---------- penguin ---------- */
+function mk(){const g=new T.Group(),M=(c,r=.6)=>new T.MeshStandardMaterial({color:c,roughness:r});
+  const dark=M(0x3f56a3),wh=M(0xffffff,.8),or=M(0xffa63e,.5),pk=M(0xff8fbd),bk=M(0x111111);
+  const sp=(m,x,y,z,sx,sy,sz,p=g)=>{const o=new T.Mesh(new T.SphereGeometry(1,20,14),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);p.add(o);return o;};
+  sp(dark,0,.9,0,.8,1,.72);sp(wh,0,.8,.28,.55,.78,.5);
+  [-1,1].forEach(s=>{sp(wh,s*.27,1.3,.6,.17,.19,.1);sp(bk,s*.27,1.3,.69,.08,.1,.05);sp(pk,s*.46,1.1,.57,.13,.08,.05);sp(or,s*.3,-.02,.3,.3,.1,.4);});
+  const b=new T.Mesh(new T.ConeGeometry(.12,.28,12),or);b.rotation.x=Math.PI/2;b.position.set(0,1.15,.7);g.add(b);
+  g.userData.fl=[-1,1].map(s=>{const p=new T.Group();p.position.set(s*.75,1.1,0);g.add(p);sp(dark,s*.12,-.35,0,.12,.45,.3,p);p.rotation.z=s*.3;return p;});
+  const c=new T.Mesh(new T.TorusGeometry(.66,.1,12,32),pk);c.rotation.x=Math.PI/2;c.position.y=1.5;c.scale.set(1,.9,1);g.add(c);return g;}
+const peng=mk();sc.add(peng);
+
+/* ---------- pebbles + photos ---------- */
+const SU=[],U=[0],pg=new T.SphereGeometry(1,16,12),pl=new T.PlaneGeometry(1,1),pebs=[],photos=[],tl=new T.TextureLoader();
+for(let i=0;i<N;i++){const u=.035+.93*i/(N-1);SU.push(u);U.push(clamp(u-1.7/L,0,1));
+  const p=curve.getPointAt(u),m=new T.Mesh(pg,new T.MeshStandardMaterial({color:0x8f9bc4,roughness:.5,emissive:0xff6fa6,emissiveIntensity:.25}));
+  m.scale.set(.7,.4,.55);m.position.set(p.x,.3,p.z);m.rotation.y=Math.random()*6;sc.add(m);
+  const gl=glow(0xff9cc6,3.2,.6);gl.position.set(p.x,.7,p.z);sc.add(gl);pebs.push({m,gl,p});
+  const g=new T.Group(),fr=new T.Mesh(pl,new T.MeshBasicMaterial({color:0xffffff})),pic=new T.Mesh(pl,new T.MeshBasicMaterial({color:0xffd6e5}));
+  pic.position.z=.01;g.add(fr,pic);g.userData={fr,pic,asp:.75,st:0,ld:0};g.position.set(p.x,1,p.z);g.scale.setScalar(0);sc.add(g);photos.push(g);lay(g);}
+function lay(g){const{fr,pic,asp}=g.userData;pic.scale.set(2*asp,2,1);fr.scale.set(2*asp+.22,2.55,1);fr.position.y=-.14;}
+function load(i){if(i>=N)return;const g=photos[i];if(g.userData.ld)return;g.userData.ld=1;
+  tl.load(CONFIG.photo(i),t=>{t.encoding=T.sRGBEncoding;g.userData.asp=clamp(t.image.width/t.image.height,.5,1.7);const m=g.userData.pic.material;m.map=t;m.color.set(0xffffff);m.needsUpdate=true;lay(g);},undefined,()=>{});}
+load(0);load(1);load(2);
+
+/* ---------- weather (snow / rain / flowers / leaves) ---------- */
+const WX=[{c:0xffffff,v:.012,s:.14,bg:0x0b1236,gr:0xdfe9ff,sw:.002},{c:0x9ecbff,v:.24,s:.08,bg:0x0a1a30,gr:0x8fa6c4,sw:0},
+ {c:0xffa6c9,v:.014,s:.26,bg:0x2a1445,gr:0xf0d4e6,sw:.006},{c:0xffa04a,v:.02,s:.24,bg:0x2e1a24,gr:0xe3c4ae,sw:.008}];
+const PN=220,pa=new Float32Array(PN*3);for(let i=0;i<PN;i++){pa[i*3]=(Math.random()-.5)*22;pa[i*3+1]=Math.random()*9;pa[i*3+2]=(Math.random()-.5)*22;}
+const pgm=new T.BufferGeometry();pgm.setAttribute('position',new T.BufferAttribute(pa,3));
+const pmat=new T.PointsMaterial({map:gtex,color:0xffffff,size:.14,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false}),parts=new T.Points(pgm,pmat);sc.add(parts);
+const cur={c:new T.Color(0xffffff),bg:new T.Color(0x0b1236),gr:new T.Color(0xdfe9ff),v:.012,s:.14,sw:.002},tmp=new T.Color();
+const season=k=>Math.min(3,Math.floor(k*4/N));
+
+/* ---------- finale heart ---------- */
+const hs=new T.Shape();hs.moveTo(0,.25);hs.bezierCurveTo(0,.45,-.35,.5,-.35,.2);hs.bezierCurveTo(-.35,-.05,-.1,-.15,0,-.35);hs.bezierCurveTo(.1,-.15,.35,-.05,.35,.2);hs.bezierCurveTo(.35,.5,0,.45,0,.25);
+const HG=new T.ExtrudeGeometry(hs,{depth:.15,bevelEnabled:true,bevelSize:.04,bevelThickness:.04,bevelSegments:3,curveSegments:16});HG.center();
+const heart=new T.Mesh(HG,new T.MeshStandardMaterial({color:0xff7eb3,emissive:0xff3d86,emissiveIntensity:.7,roughness:.4}));heart.visible=false;sc.add(heart);
+
+/* ---------- state ---------- */
+let st='idle',k=0,t0=0,walkFrom=0,walkTo=0,head=0,yaw=0,pitch=0,tapAt=0,pulse=0,fT=0,tx=0,ty=0,now=0,last=performance.now()/1000;
+const ang=(a,b,f)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*f;};
+function walk(){st='walk';t0=now;walkFrom=U[k];walkTo=U[k+1];load(k+2);load(k+3);$('cap').classList.remove('on');$('hint').style.opacity=0;}
+function arrive(){st='show';tapAt=now;photos[k].userData.st=1;pebs[k].m.material.emissiveIntensity=1;$('cnt').textContent=(k+1)+' / '+N;
+  const c=CONFIG.caps[k];if(c){$('cap').textContent=c;$('cap').classList.add('on');}}
+function next(){photos[k].userData.st=2;$('cap').classList.remove('on');k++;if(k<N)walk();else finale();}
+function finale(){$('sk').style.display='none';st='final';fT=now;const p=pebs[N-1];heart.position.set(p.p.x,1.2,p.p.z);heart.scale.setScalar(.1);heart.visible=true;p.m.visible=false;p.gl.visible=false;}
+function lines(){const f=$('fin');f.innerHTML=CONFIG.msg.map(s=>`<p>${s}</p>`).join('');f.classList.add('on');
+  [...f.children].forEach((p,i)=>setTimeout(()=>p.classList.add('on'),2500+i*2800));
+  if(CONFIG.next)setTimeout(()=>{$('nx').href=CONFIG.next;$('nx').style.display='grid';},2500+CONFIG.msg.length*2800);}
+$('sk').onclick=e=>{e.stopPropagation();if(st==='final')return;photos.forEach(g=>g.userData.st=2);k=N;$('cap').classList.remove('on');$('hint').style.opacity=0;$('cnt').textContent=N+' / '+N;
+  const q=curve.getPointAt(U[N]);peng.position.set(q.x,0,q.z);const tg=curve.getTangentAt(U[N]);head=Math.atan2(tg.x,tg.z);peng.rotation.y=head;finale();};
+function advance(){if(st==='idle'){walk();}else if(st==='show'&&now-tapAt>1.1)next();}
+
+/* ---------- input: tap, drag, hold = heartbeat, tilt ---------- */
+let dn=null,moved=false,holdT=0,holding=false,beat=0,asked=false;
+const cv=ren.domElement;
+cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY};moved=false;holding=false;
+  if(!asked){asked=true;if(window.DeviceOrientationEvent&&DeviceOrientationEvent.requestPermission)DeviceOrientationEvent.requestPermission().catch(()=>{});}
+  holdT=setTimeout(()=>{if(!moved){holding=true;hb();beat=setInterval(hb,900);}},380);});
+function hb(){pulse=1;try{navigator.vibrate&&navigator.vibrate([45,90,45]);}catch(e){}$('vg').style.opacity=.55;setTimeout(()=>$('vg').style.opacity=0,260);}
+addEventListener('pointermove',e=>{if(!dn)return;const dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>7){moved=true;clearTimeout(holdT);}
+  if(moved){yaw-=dx*.008;pitch=clamp(pitch+dy*.01,-1.5,2.5);dn={x:e.clientX,y:e.clientY};}});
+addEventListener('pointerup',()=>{clearTimeout(holdT);clearInterval(beat);if(dn&&!moved&&!holding)advance();dn=null;holding=false;});
+addEventListener('deviceorientation',e=>{if(e.gamma==null)return;tx=clamp(e.gamma/30,-1,1);ty=clamp((e.beta-50)/35,-1,1);});
+
+/* ---------- loop ---------- */
+const want=new T.Vector3(),look=new T.Vector3();
+function frame(){requestAnimationFrame(frame);const tt=performance.now()/1000,dt=Math.min(.05,tt-last);last=tt;now=tt;
+  if(st==='walk'){const s=clamp((now-t0)/3.4),e=s*s*(3-2*s),u=walkFrom+(walkTo-walkFrom)*e,p=curve.getPointAt(u),tg=curve.getTangentAt(u);
+    peng.position.set(p.x,Math.abs(Math.sin(now*9))*.1*Math.sin(s*Math.PI),p.z);head=ang(head,Math.atan2(tg.x,tg.z),.12);peng.rotation.y=head;peng.rotation.z=Math.sin(now*9)*.1;
+    peng.userData.fl[0].rotation.z=-.3-Math.sin(now*9)*.35;peng.userData.fl[1].rotation.z=.3+Math.sin(now*9)*.35;
+    if(s>=1){peng.rotation.z=0;arrive();}}
+  else{peng.rotation.z*=.9;peng.userData.fl[1].rotation.z=st==='show'?2.1+Math.sin(now*7)*.4:.3;peng.userData.fl[0].rotation.z=-.3;}
+  // weather follows progress
+  const w=WX[season(Math.min(k,N-1))];tmp.set(w.c);cur.c.lerp(tmp,.02);tmp.set(w.bg);cur.bg.lerp(tmp,.02);tmp.set(w.gr);cur.gr.lerp(tmp,.02);cur.v+=(w.v-cur.v)*.02;cur.s+=(w.s-cur.s)*.02;cur.sw+=(w.sw-cur.sw)*.02;
+  pmat.color.copy(cur.c);pmat.size=cur.s;sc.background.copy(cur.bg);sc.fog.color.copy(cur.bg);gm.color.copy(cur.gr).multiplyScalar(.55);document.body.style.background='#'+cur.bg.getHexString();
+  for(let i=0;i<PN;i++){pa[i*3+1]-=cur.v;pa[i*3]+=Math.sin(now+i)*cur.sw;if(pa[i*3+1]<0)pa[i*3+1]=9;}pgm.attributes.position.needsUpdate=true;
+  parts.position.set(peng.position.x,0,peng.position.z);ground.position.set(peng.position.x,0,peng.position.z);stars.position.set(peng.position.x,0,peng.position.z);
+  // photos hover / rest
+  photos.forEach((g,j)=>{const s=g.userData.st,pb=pebs[j].p,ts=s===1?1.45:s===2?.38:0,ty2=s===1?3.7:s===2?1.6+Math.sin(now*1.3+j)*.12:1;
+    g.scale.setScalar(g.scale.x+(ts-g.scale.x)*.08);g.position.y+=(ty2-g.position.y)*.08;g.quaternion.copy(cam.quaternion);});
+  pebs.forEach((o,j)=>{o.gl.material.opacity=.45+.2*Math.sin(now*2+j)+(j===k&&st==='show'?.3:0)+pulse*.3;});
+  // finale
+  if(st==='final'){const f=now-fT,hp=curve.getPointAt(SU[N-1]);
+    if(f<3){const e=clamp(f/3);heart.position.set(hp.x,1.2+e*2.3,hp.z);heart.scale.setScalar(.1+e*1.3);}
+    heart.rotation.y=now*1.1;heart.scale.setScalar(heart.scale.x*(1+Math.sin(now*4)*.004));
+    if(f>3.2&&!$('fin').classList.contains('on'))lines();}
+  pulse*=.92;
+  // camera
+  yaw*=1-dt*.35;pitch*=1-dt*.35;const a=head+Math.PI+yaw,d=7.6-(st==='show'?1:0),
+  hv=st==='final'?.0:0;
+  want.set(peng.position.x+Math.sin(a)*d,3.4+pitch,peng.position.z+Math.cos(a)*d);cam.position.lerp(want,1-Math.pow(.02,dt));
+  look.set(peng.position.x+tx*1.6,2.1-ty*.8+(st==='show'?.8:0)+(st==='final'?1.2:0),peng.position.z);cam.lookAt(look);cam.rotation.z+=tx*.03;
+  cam.zoom=1+pulse*.03;cam.updateProjectionMatrix();
+  ren.render(sc,cam);}
+document.fonts&&document.fonts.load('italic 20px "Bodoni Moda"');
+peng.position.copy(curve.getPointAt(0));head=Math.atan2(curve.getTangentAt(0).x,curve.getTangentAt(0).z);peng.rotation.y=head;
+frame();
+})();
+</script>
+<script>
+/* song pichle page se wahi se aage chalega */
+(function(){const a=new Audio('song.mp3');a.loop=true;a.volume=.7;
+  a.addEventListener('loadedmetadata',()=>{try{a.currentTime=parseFloat(localStorage.getItem('st'))||0}catch(e){}},{once:true});
+  const sv=()=>{try{localStorage.setItem('st',a.currentTime)}catch(e){}};
+  addEventListener('pagehide',sv);document.addEventListener('visibilitychange',()=>{if(document.hidden)sv();});
+  setInterval(()=>{if(!a.paused)sv();},1000);
+  const p=()=>a.play().catch(()=>{});p();addEventListener('pointerdown',p,{once:true});})();
+</script>
+</body></html>
