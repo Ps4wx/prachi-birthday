@@ -193,4 +193,86 @@ function waddle(t,speed,dir){
   footL.position.z=.1+Math.max(0,Math.sin(t*speed))*.25*dir;
   footR.position.z=.1+Math.max(0,-Math.sin(t*speed))*.25*dir;
   footL.position.y=.08+Math.max(0,Math.sin(t*speed))*.08;
-  footR.po
+  footR.position.y=.08+Math.max(0,-Math.sin(t*speed))*.08;
+  bodyG.position.y=Math.abs(Math.sin(t*speed))*.05;
+}
+function tick(now){
+  const t=(now-t0)/1000, p=sg.attributes.position;
+  for(let i=0;i<N;i++){let y=p.array[i*3+1]-.012-(i%5)*.002; p.array[i*3]+=Math.sin(now*.0005+i)*.002; if(y<0)y=10; p.array[i*3+1]=y;}
+  p.needsUpdate=true;
+  if(phase==='walk'){
+    const k=Math.min(t/T_WALK,1);
+    penguin.position.z=START_Z+(STOP_Z-START_Z)*ease(k);
+    waddle(t,9,1); fL.rotation.x=fR.rotation.x=-1.0;
+    env.position.set(0,1.0,penguin.position.z+.55); env.rotation.set(-.15,0,0);
+    if(k>=1){phase='drop';t0=now;}
+  }else if(phase==='drop'){
+    const k=Math.min(t/T_DROP,1), e=ease(k);
+    bodyG.rotation.z=0; bodyG.position.y=0; footL.position.set(-.2,.08,.1); footR.position.set(.2,.08,.1);
+    bodyG.rotation.x=e*.55; fL.rotation.x=fR.rotation.x=-1.0+e*.4;
+    const sy=1.0, sz=STOP_Z+.55;
+    env.position.set(DROP_POS.x*e, sy+(DROP_POS.y-sy)*e+Math.sin(e*Math.PI)*.1, sz+(DROP_POS.z-sz)*e);
+    env.rotation.x=-.15+(-Math.PI/2+.15)*e;
+    if(k>=1){phase='back';t0=now;clickable=true;hint.classList.add('on');intro.style.opacity=0;}
+  }else if(phase==='back'){
+    const k=Math.min(t/T_BACK,1);
+    bodyG.rotation.x*=.9; fL.rotation.x=fR.rotation.x=-.2*(1-k);
+    penguin.position.z=STOP_Z-(STOP_Z-START_Z)*ease(k)*.95;
+    waddle(t,8,-1);
+    if(k>=1){phase='idle';penguin.visible=false;}
+  }
+  if(clickable){ env.position.y=DROP_POS.y+.02+Math.sin(now*.004)*.012; }
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* letter: roll open -> typewriter */
+const overlay=document.getElementById('overlay'), bodyEl=document.getElementById('body'),
+      signEl=document.getElementById('sign'), nextBtn=document.getElementById('next');
+let skipFlag=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function spawnHearts(){
+  setInterval(()=>{
+    const h=document.createElement('div'); h.className='heart'; h.textContent=Math.random()>.5?'♥':'❤';
+    h.style.left=Math.random()*100+'vw'; h.style.fontSize=(12+Math.random()*18)+'px';
+    h.style.animationDuration=(6+Math.random()*5)+'s'; overlay.appendChild(h);
+    setTimeout(()=>h.remove(),11500);
+  },700);
+}
+function openLetter(){
+  if(!clickable||opened)return; opened=true; hint.classList.remove('on'); hint.style.opacity=0;
+  overlay.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('show')));
+  setTimeout(()=>overlay.classList.add('rolled'),900);   // khat dheere dheere rolling karke khulta hai
+  setTimeout(runLetter,900+3400);                        // khulne ke baad typewriter shuru
+  spawnHearts();
+}
+canvas.addEventListener('click',openLetter);
+canvas.addEventListener('touchend',openLetter);
+
+async function runLetter(){
+  const all=[TO+",",...PARAS];
+  for(let i=0;i<all.length;i++){
+    const p=document.createElement('p'); bodyEl.appendChild(p);
+    const caret=document.createElement('span'); caret.className='caret';
+    const txt=document.createTextNode(''); p.appendChild(txt); p.appendChild(caret);
+    const s=all[i];
+    for(let c=0;c<s.length;c++){
+      if(skipFlag){txt.nodeValue=s;break;}
+      txt.nodeValue=s.slice(0,c+1);
+      await sleep(TYPE_SPEED + (/[,.!?]/.test(s[c])?80:0));
+    }
+    txt.nodeValue=s; caret.remove();
+    if(!skipFlag) await sleep(PARA_GAP);
+  }
+  signEl.textContent=SIGN; signEl.style.opacity=1;
+  nextBtn.style.display='block';
+}
+document.getElementById('skip').onclick=()=>{skipFlag=true;};
+nextBtn.textContent=NEXT_TEXT;
+nextBtn.onclick=onNext;
+</script>
+</body>
+</html>
