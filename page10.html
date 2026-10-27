@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="en"><head>
+<script>
+/* 21 Nov se pehle sirf admin (tumhara phone) khol sakta hai, baaki index pe wapas */
+(function(){var ok=Date.now()>=new Date(2026,10,21).getTime(),a=false;try{a=localStorage.getItem('ps_admin')==='1'}catch(e){}
+if(!ok&&!a){document.documentElement.style.display='none';location.replace('index.html');window.stop();}})();
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Make a wish</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,600;1,400&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--c:#ff8fbd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;font-family:'Bodoni Moda','Tiro Devanagari Hindi',Georgia,serif;color:#3a4a85}
+body{background:linear-gradient(180deg,#8fcbf7 0%,#cfe8ff 35%,#ffd0e4 100%)}
+#night,#stars{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 3.5s}
+#night{background:linear-gradient(180deg,#0a1238 0%,#2a2a72 55%,#6a3a8a 100%)}
+#night.on,#stars.on{opacity:1}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.2}}
+#bg{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.pgn{position:absolute;animation:fl 7s ease-in-out infinite}
+.bo{position:absolute;border-radius:50%;filter:blur(6px);animation:fl 9s ease-in-out infinite}
+@keyframes fl{0%,100%{translate:0 0}50%{translate:0 -14px}}
+.fh{position:absolute;bottom:-30px;color:#ff8fbd;opacity:0;filter:drop-shadow(0 0 6px #ff8fbd);animation:fh linear infinite}
+@keyframes fh{10%{opacity:.7}90%{opacity:.5}100%{transform:translate(30px,-112vh);opacity:0}}
+.stk{position:fixed;pointer-events:none;animation:fl 5s ease-in-out infinite;rotate:var(--r);z-index:2}
+#pg{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:safe center;padding:calc(20px + env(safe-area-inset-top,0px)) 18px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto;text-align:center}
+.big{width:78px;animation:wob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes wob{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+h2{margin:6px 0 0;font-size:33px;font-style:italic;font-weight:600;color:#fff;text-shadow:0 0 12px #fff,0 0 26px var(--c),0 0 44px var(--c)}
+.sub{margin:8px 0 22px;font-style:italic;font-size:18px;line-height:1.5;color:#4b5a96;text-shadow:0 0 10px #fff;max-width:340px;transition:color 3s}
+.night .sub{color:#ffd9ea;text-shadow:0 0 10px #ff8fbd}
+#lan{position:relative;width:min(88vw,400px);padding:30px 20px 26px;border-radius:30px 30px 24px 24px/38px 38px 28px 28px;background:radial-gradient(ellipse at 50% 40%,#fffaf0 0%,#ffe9d6 55%,#ffd2de 100%);box-shadow:0 0 40px #ffd9a8,0 0 90px #ff9cc688,inset 0 0 40px #fff;animation:flk 3s ease-in-out infinite;transition:transform 6s cubic-bezier(.35,0,.6,1),opacity 3s 3.2s}
+#lan::before,#lan::after{content:"";position:absolute;left:14%;right:14%;height:12px;border-radius:6px;background:linear-gradient(#c9568a,#e9789f)}
+#lan::before{top:-6px}#lan::after{bottom:-6px}
+@keyframes flk{50%{box-shadow:0 0 54px #ffe0b8,0 0 110px #ff9cc6aa,inset 0 0 40px #fff}}
+#lan.fly{animation:none;transform:translateY(-125vh) scale(.28) rotate(4deg);opacity:0}
+#msg{display:block;width:100%;height:min(30vh,250px);resize:none;border:none;background:transparent;outline:none;color:#7a3a5a;font:italic 20px/1.6 'Bodoni Moda','Tiro Devanagari Hindi',Georgia,serif;text-align:left}
+#msg::placeholder{color:#c89ab0}
+#ctl{transition:opacity 1s;display:flex;flex-direction:column;align-items:center}
+#ctl.hide{opacity:0;pointer-events:none}
+#meter{display:flex;gap:6px;margin:20px 0 6px}
+#meter svg{width:18px;height:18px;fill:#ffffff99;stroke:#ff8fbd;stroke-width:1.5;transition:.25s}
+#meter svg.on{fill:#ff6fa6;filter:drop-shadow(0 0 6px #ff8fbd)}
+#lbl{font-size:15px;font-style:italic;color:#d0306f;text-shadow:0 0 8px #fff;min-height:22px}
+.night #lbl{color:#ffd9ea;text-shadow:0 0 8px #ff8fbd}
+#send{margin-top:12px;display:flex;gap:8px;align-items:center;padding:13px 32px;border-radius:40px;border:1px solid #fff;background:linear-gradient(160deg,#fff,#ffc2dc);color:#d0306f;font:600 21px 'Bodoni Moda',serif;cursor:pointer;box-shadow:0 0 24px #ff8fbd;animation:beat 1.6s infinite}
+#send:disabled{opacity:.45;filter:grayscale(.5);box-shadow:none;animation:none;cursor:not-allowed}
+#send svg{width:20px;height:20px}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+#st{min-height:22px;margin:10px 0 0;font-size:15px;font-style:italic;color:#d0306f;max-width:340px}
+#st a{color:#d0306f}
+#thanks{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;opacity:0;pointer-events:none;transition:opacity 2s 2.8s}
+#thanks.on{opacity:1;pointer-events:auto}
+#thanks h2{font-size:38px;line-height:1.25}
+#thanks .sub{color:#ffd9ea;text-shadow:0 0 10px #ff8fbd;margin-bottom:0}
+#again{margin-top:24px;padding:11px 24px;border-radius:30px;border:1px solid #fff9;background:#ffffff22;color:#fff;font:italic 18px 'Bodoni Moda',serif;cursor:pointer;box-shadow:0 0 16px #ff8fbd88}
+.sh{animation:shk .4s}@keyframes shk{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.hrt{position:fixed;color:var(--c);pointer-events:none;filter:drop-shadow(0 0 6px var(--c));animation:rise 1.8s ease-out forwards;z-index:40}
+@keyframes rise{to{transform:translateY(-160px);opacity:0}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><symbol id="pn" viewBox="0 0 100 120">
+<ellipse cx="20" cy="76" rx="8" ry="20" transform="rotate(20 20 76)" fill="#354b96"/><ellipse cx="80" cy="76" rx="8" ry="20" transform="rotate(-20 80 76)" fill="#354b96"/>
+<ellipse cx="50" cy="65" rx="32" ry="45" fill="#3f56a3"/><ellipse cx="50" cy="79" rx="22" ry="31" fill="#fff"/>
+<circle cx="38" cy="46" r="6.5" fill="#fff"/><circle cx="62" cy="46" r="6.5" fill="#fff"/><circle cx="39" cy="47" r="3.2" fill="#111"/><circle cx="61" cy="47" r="3.2" fill="#111"/>
+<circle cx="29" cy="57" r="4.5" fill="#ff8fb8" opacity=".8"/><circle cx="71" cy="57" r="4.5" fill="#ff8fb8" opacity=".8"/>
+<path d="M44 54h12l-6 9z" fill="#ffb23e"/><ellipse cx="38" cy="112" rx="10" ry="5" fill="#ffb23e"/><ellipse cx="62" cy="112" rx="10" ry="5" fill="#ffb23e"/></symbol></svg>
+<div id="night"></div><div id="stars"></div><div id="bg"></div>
+<main id="pg">
+ <svg class="big" viewBox="0 0 100 120"><use href="#pn"/></svg>
+ <h2 id="ttl"></h2><p class="sub" id="sub"></p>
+ <div id="lan"><textarea id="msg" spellcheck="true"></textarea></div>
+ <div id="ctl">
+  <div id="meter"></div><div id="lbl"></div>
+  <button id="send" disabled>Send <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 21.5l19-9.5-19-9.5v7.4l13.6 2.1-13.6 2.1z"/></svg></button>
+  <p id="st"></p>
+ </div>
+</main>
+<div id="thanks"><h2>Your wish is on its way</h2><p class="sub">Priyanshu will read every word.</p><button id="again">Write another</button></div>
+<script>
+// ====== yahan sab badal sakte ho ======
+const CONFIG={
+  mail:'fffightergamer3@gmail.com',      // message seedha yahin aayega
+  from:'Prachi',
+  minLetters:10,                          // itne akshar likhe bina Send nahi hoga (spaces count nahi hote)
+  title:'Write your wish',
+  sub:'Or leave a message for Priyanshu. Anything at all, as long as it comes from your heart.',
+  placeholder:'Write here...'
+};
+const $=id=>document.getElementById(id),HP='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+$('ttl').textContent=CONFIG.title;$('sub').textContent=CONFIG.sub;$('msg').placeholder=CONFIG.placeholder;
+const bg=$('bg');
+for(let i=0;i<8;i++){const w=50+Math.random()*60;
+  bg.insertAdjacentHTML('beforeend',`<svg class="pgn" viewBox="0 0 100 120" style="width:${w}px;left:${Math.random()*92}%;top:${Math.random()*85}%;opacity:${.3+Math.random()*.3};animation-delay:-${Math.random()*7}s;${Math.random()<.5?'scale:-1 1':''}"><use href="#pn"/></svg>`);}
+for(let i=0;i<8;i++){const s=60+Math.random()*120;
+  bg.insertAdjacentHTML('beforeend',`<i class="bo" style="left:${Math.random()*95}%;top:${Math.random()*95}%;width:${s}px;height:${s}px;background:radial-gradient(circle,#ffffffaa,#ffb8d800 70%);animation-delay:-${Math.random()*9}s"></i>`);}
+for(let i=0;i<14;i++){const s=10+Math.random()*14;
+  bg.insertAdjacentHTML('beforeend',`<svg class="fh" viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor" style="left:${Math.random()*96}%;animation-duration:${14+Math.random()*12}s;animation-delay:-${Math.random()*20}s"><path d="${HP}"/></svg>`);}
+for(let i=0;i<90;i++)$('stars').insertAdjacentHTML('beforeend',`<i class="star" style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:-${Math.random()*3}s;opacity:${.4+Math.random()*.6}"></i>`);
+const ST=(n,x,y,w,r,d)=>document.body.insertAdjacentHTML('beforeend',`<img class="stk" src="stickers/s${n}.png" alt="" style="left:${x}%;top:${y}%;width:${w}px;--r:${r}deg;animation-delay:${d}s" onerror="this.remove()">`);
+ST(1,2,6,80,-8,0);ST(2,78,5,70,10,.8);ST(4,3,82,90,6,1);ST(5,76,80,90,-6,.4);
+
+const ta=$('msg'),btn=$('send'),st=$('st'),lbl=$('lbl'),KEY='prachi_wish_draft',MIN=CONFIG.minLetters;
+$('meter').innerHTML=Array.from({length:MIN},()=>`<svg viewBox="0 0 24 24"><path d="${HP}"/></svg>`).join('');
+try{ta.value=localStorage.getItem(KEY)||'';}catch(e){}
+const letters=()=>[...ta.value.replace(/\s/g,'')].length;
+function upd(){const n=letters();btn.disabled=n<MIN;
+  [...$('meter').children].forEach((h,i)=>h.classList.toggle('on',i<n));
+  lbl.textContent=n<MIN?`Write ${MIN-n} more letter${MIN-n>1?'s':''} to unlock Send`:'Your wish is ready';
+  try{localStorage.setItem(KEY,ta.value)}catch(e){}}
+ta.addEventListener('input',upd);upd();
+function hearts(){for(let i=0;i<20;i++){const s=16+Math.random()*24;
+  document.body.insertAdjacentHTML('beforeend',`<svg class="hrt" viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor" style="left:${innerWidth/2+(Math.random()-.5)*280}px;top:${innerHeight*.45+(Math.random()-.5)*140}px;animation-delay:${Math.random()*.6}s"><path d="${HP}"/></svg>`);}
+  setTimeout(()=>document.querySelectorAll('.hrt').forEach(h=>h.remove()),3200);}
+btn.onclick=async()=>{
+  const text=ta.value.trim();if(letters()<MIN)return;
+  btn.disabled=true;st.textContent='Sending...';
+  try{
+    const r=await fetch('https://formsubmit.co/ajax/'+CONFIG.mail,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({name:CONFIG.from,message:text,_subject:'A wish from '+CONFIG.from,_template:'table',_captcha:'false',_honey:''})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||j.success==='false'||j.success===false){
+      if(/activat/i.test(j.message||'')){st.textContent='Setup: open the inbox of '+CONFIG.mail+', click Activate, then press Send again.';btn.disabled=false;return;}
+      throw new Error(j.message||'failed');}
+    try{localStorage.removeItem(KEY);}catch(e){}
+    st.textContent='';$('ctl').classList.add('hide');hearts();
+    $('lan').classList.add('fly');$('night').classList.add('on');$('stars').classList.add('on');document.body.classList.add('night');
+    $('thanks').classList.add('on');
+  }catch(e){
+    st.innerHTML='Could not send. Please try again, or <a href="mailto:'+CONFIG.mail+'?subject='+encodeURIComponent('A wish from '+CONFIG.from)+'&body='+encodeURIComponent(text)+'">open your email app</a>.';
+    btn.disabled=false;}
+};
+$('again').onclick=()=>{ta.value='';upd();$('thanks').classList.remove('on');$('lan').classList.remove('fly');$('ctl').classList.remove('hide');
+  $('night').classList.remove('on');$('stars').classList.remove('on');document.body.classList.remove('night');st.textContent='';};
+</script>
+<script>
+/* song page 9 se wahi se aage chalega */
+(function(){const a=new Audio('song.mp3');a.loop=true;a.volume=.7;
+  a.addEventListener('loadedmetadata',()=>{try{a.currentTime=parseFloat(localStorage.getItem('st'))||0}catch(e){}},{once:true});
+  addEventListener('pagehide',()=>{try{localStorage.setItem('st',a.currentTime)}catch(e){}});
+  const p=()=>a.play().catch(()=>{});p();addEventListener('pointerdown',p,{once:true});})();
+</script>
+</body></html>
